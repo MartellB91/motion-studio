@@ -39,7 +39,10 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, dev
 page.on('pageerror', e => { console.error('Page error:', e.message); process.exit(1); });
 await page.goto(pathToFileURL(file).href);
 await page.waitForFunction(() => typeof window.render === 'function' && window.DURATION && window.SIZE);
-await page.evaluate(() => document.fonts.ready);
+await page.evaluate(async () => {
+  await Promise.all([...document.fonts].map(f => f.load()));
+  await document.fonts.ready;
+});
 
 const { duration, size } = await page.evaluate(() => ({ duration: window.DURATION, size: window.SIZE }));
 const [W, H] = size;

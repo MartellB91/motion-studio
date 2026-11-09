@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../brand.css">
+<style>
+  #stage { padding: 90px 120px; }
+  #head { font-family: var(--font-display); font-weight: 700; font-size: 84px; letter-spacing: 2px; text-transform: uppercase; }
+  #head span { color: var(--accent); }
+  #rule { height: 4px; background: var(--accent); margin: 28px 0 56px; width: 0; }
+  .lbl { font-size: 26px; color: var(--muted); letter-spacing: 5px; text-transform: uppercase; margin-bottom: 22px; }
+  #swatches { display: flex; gap: 36px; margin-bottom: 64px; }
+  .sw { flex: 1; }
+  .chip { height: 210px; border-radius: 20px; border: 2px solid rgba(255,255,255,.25); }
+  .name { font-family: var(--font-display); font-weight: 700; font-size: 34px; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; }
+  .hex  { font-size: 28px; color: var(--muted); margin-top: 6px; }
+  #fonts { display: flex; gap: 60px; }
+  .spec { flex: 1; }
+  .big { font-size: 76px; line-height: 1.05; }
+  .small { font-size: 26px; color: var(--muted); margin-top: 14px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="head">Brand <span>check</span></div>
+  <div id="rule"></div>
+
+  <div class="lbl" id="l1">Colors</div>
+  <div id="swatches"></div>
+
+  <div class="lbl" id="l2">Typography</div>
+  <div id="fonts">
+    <div class="spec" id="f1">
+      <div class="big" style="font-family:var(--font-display);font-weight:700;text-transform:uppercase">Space Grotesk</div>
+      <div class="small">Headline · Bold · UPPERCASE or Title Case</div>
+    </div>
+    <div class="spec" id="f2">
+      <div class="big" style="font-family:var(--font-body);font-weight:400">Inter Regular</div>
+      <div class="small">Body · Regular · The quick brown fox jumps over the lazy dog</div>
+    </div>
+  </div>
+</div>
+<script>
+window.DURATION = 5;
+window.SIZE = [1920, 1080];
+
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const out = x => 1 - Math.pow(1 - x, 3);
+const inOut = x => x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2;
+
+const COLORS = [
+  ['Background', '--bg'],
+  ['Text', '--fg'],
+  ['Accent', '--accent'],
+  ['Muted', '--muted'],
+];
+const css = getComputedStyle(document.documentElement);
+const sw = document.getElementById('swatches');
+const swEls = COLORS.map(([name, v]) => {
+  const hex = css.getPropertyValue(v).trim().toUpperCase();
+  const d = document.createElement('div');
+  d.className = 'sw';
+  d.innerHTML = `<div class="chip" style="background:var(${v})"></div><div class="name">${name}</div><div class="hex">${hex}</div>`;
+  sw.appendChild(d);
+  return d;
+});
+
+const $ = id => document.getElementById(id);
+const rise = (el, p, dist = 40) => { el.style.opacity = p; el.style.transform = `translateY(${(1 - p) * dist}px)`; };
+
+window.render = function (t) {
+  rise($('head'), out(clamp(t / 0.6)));
+  $('rule').style.width = `${inOut(clamp((t - 0.2) / 0.8)) * 100}%`;
+  rise($('l1'), out(clamp((t - 0.6) / 0.4)), 20);
+  swEls.forEach((el, i) => rise(el, out(clamp((t - 0.8 - i * 0.2) / 0.6)), 50));
+  rise($('l2'), out(clamp((t - 2.0) / 0.4)), 20);
+  rise($('f1'), out(clamp((t - 2.2) / 0.6)));
+  rise($('f2'), out(clamp((t - 2.6) / 0.6)));
+  $('stage').style.opacity = 1 - clamp((t - 4.6) / 0.4);
+};
+window.render(0);
+</script>
+</body>
+</html>
