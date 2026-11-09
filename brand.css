@@ -1,0 +1,24 @@
+/* Your brand: edit these and every video picks them up. */
+:root {
+  --bg: #0b1020;
+  --fg: #f5f7ff;
+  --muted: #8b93b5;
+  --accent: #ff5d73;
+  --accent-2: #5dd6ff;
+
+  --font-display: "Inter Display", "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: "DejaVu Sans Mono", ui-monospace, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  overflow: hidden;
+}
+
+/* Videos draw into #stage, which render.mjs sizes to window.SIZE. */
+#stage { position: relative; overflow: hidden; background: var(--bg); }

@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../brand.css">
+<style>
+  #stage { display: flex; align-items: center; justify-content: center; }
+  #bar { position: absolute; left: 0; top: 0; height: 100%; width: 24px; background: var(--accent); }
+  #title { font-family: var(--font-display); font-weight: 800; font-size: 120px;
+           letter-spacing: -2px; white-space: nowrap; text-align: center; }
+  #title .w { display: inline-block; margin: 0 0.12em; }
+  #sub { position: absolute; left: 0; right: 0; bottom: 160px; text-align: center;
+         font-size: 36px; color: var(--muted); letter-spacing: 6px; text-transform: uppercase; }
+  #line { position: absolute; left: 50%; top: 66%; height: 6px; background: var(--accent-2); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bar"></div>
+  <div id="title"></div>
+  <div id="line"></div>
+  <div id="sub">motion studio · test render</div>
+</div>
+<script>
+window.DURATION = 3;          // seconds
+window.SIZE = [1920, 1080];   // [width, height]
+
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const easeOutCubic = x => 1 - Math.pow(1 - x, 3);
+const easeInOut = x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+
+const title = document.getElementById('title');
+const words = ['Hello', 'from', 'my', 'studio'];
+const wordEls = words.map(w => {
+  const s = document.createElement('span');
+  s.className = 'w'; s.textContent = w;
+  title.appendChild(s);
+  return s;
+});
+const line = document.getElementById('line');
+const sub = document.getElementById('sub');
+const bar = document.getElementById('bar');
+
+// Pure function of t: same t in, same pixels out.
+window.render = function (t) {
+  bar.style.transform = `scaleY(${easeInOut(clamp(t / 0.8))})`;
+  bar.style.transformOrigin = 'top';
+
+  wordEls.forEach((el, i) => {
+    const p = easeOutCubic(clamp((t - 0.3 - i * 0.18) / 0.6));
+    el.style.opacity = p;
+    el.style.transform = `translateY(${(1 - p) * 60}px)`;
+    el.style.color = i === 3 ? 'var(--accent)' : 'var(--fg)';
+  });
+
+  const lp = easeInOut(clamp((t - 1.2) / 0.8));
+  line.style.width = `${lp * 640}px`;
+  line.style.marginLeft = `${-lp * 320}px`;
+
+  sub.style.opacity = easeOutCubic(clamp((t - 1.6) / 0.6));
+
+  // Fade everything out over the last 0.4s.
+  document.getElementById('stage').style.opacity = 1 - clamp((t - (DURATION - 0.4)) / 0.4);
+};
+window.render(0);
+</script>
+</body>
+</html>
