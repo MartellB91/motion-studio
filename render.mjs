@@ -2,6 +2,7 @@
 // Usage:
 //   node render.mjs videos/hello.html              -> out/hello.mp4
 //   node render.mjs hello --stills 3               -> out/hello-still-1.png ... (no video)
+//   node render.mjs hello --at 1.5,8,14           -> stills at those exact seconds
 //   options: --fps 30  --out <dir>
 import { createRequire } from 'node:module';
 import { spawn } from 'node:child_process';
@@ -31,6 +32,7 @@ if (!existsSync(file)) { console.error(`Not found: ${file}`); process.exit(1); }
 const name = basename(file, '.html');
 const fps = Number(flag('fps', 30));
 const stills = flag('stills') ? Number(flag('stills')) : 0;
+const at = flag('at') ? flag('at').split(',').map(Number) : [];
 const outDir = resolve(flag('out', 'out'));
 mkdirSync(outDir, { recursive: true });
 
@@ -58,13 +60,14 @@ const draw = async t => {
 };
 const shot = () => page.screenshot({ type: 'png', clip: { x: 0, y: 0, width: W, height: H } });
 
-if (stills > 0) {
-  for (let k = 0; k < stills; k++) {
-    const t = duration * (k + 0.5) / stills;
+if (stills > 0 || at.length) {
+  const times = at.length ? at : Array.from({ length: stills }, (_, k) => duration * (k + 0.5) / stills);
+  for (let k = 0; k < times.length; k++) {
+    const t = times[k];
     await draw(t);
     const path = join(outDir, `${name}-still-${k + 1}.png`);
     await page.screenshot({ type: 'png', path, clip: { x: 0, y: 0, width: W, height: H } });
-    console.log(`still ${k + 1}/${stills}  t=${t.toFixed(2)}s  -> ${path}`);
+    console.log(`still ${k + 1}/${times.length}  t=${t.toFixed(2)}s  -> ${path}`);
   }
   await browser.close();
   process.exit(0);

@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../brand.css">
+<style>
+  .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .brand { font-family: var(--font-display); font-weight: 700; font-size: 190px; letter-spacing: 4px; text-transform: uppercase; line-height: 1; }
+  .rule { height: 6px; background: var(--accent); border-radius: 3px; margin-top: 44px; width: 0; }
+
+  #steps { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; gap: 56px; padding: 0 170px; }
+  .row { display: flex; align-items: center; gap: 70px; }
+  .num { font-family: var(--font-display); font-weight: 700; font-size: 220px; line-height: 1; color: var(--accent); width: 190px; text-align: center; }
+  .txt { flex: 1; }
+  .h { font-family: var(--font-display); font-weight: 700; font-size: 66px; letter-spacing: 1px; text-transform: uppercase; line-height: 1.05; }
+  .l { font-family: var(--font-body); font-weight: 400; font-size: 34px; line-height: 1.35; color: var(--muted); margin-top: 16px; max-width: 1250px; text-wrap: balance; }
+
+  #cta { font-family: var(--font-body); font-weight: 400; font-size: 46px; line-height: 1.4; max-width: 1200px; margin-top: 64px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="center" id="intro">
+    <div class="brand">Junctri AI</div>
+    <div class="rule" id="introRule"></div>
+  </div>
+
+  <div id="steps"></div>
+
+  <div class="center" id="end">
+    <div class="brand">Junctri AI</div>
+    <div class="rule" id="endRule"></div>
+    <div id="cta">What's one task taking up too much of your day? Send me a message, and let's explore how AI could help.</div>
+  </div>
+</div>
+<script>
+window.DURATION = 15;
+window.SIZE = [1920, 1080];
+
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const inOut = x => x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2;
+const ease = (t, start, dur) => inOut(clamp((t - start) / dur));
+const $ = id => document.getElementById(id);
+
+const STEPS = [
+  ['1', 'Find the bottleneck', 'We identify repetitive tasks and everyday problems costing your business time.'],
+  ['2', 'Build a smarter workflow', 'We match practical AI tools to your needs and show your team how to use them.'],
+  ['3', 'Measure and improve', 'We track time saved, review results, and refine the process as your business grows.'],
+];
+const rows = STEPS.map(([n, h, l]) => {
+  const r = document.createElement('div');
+  r.className = 'row';
+  r.innerHTML = `<div class="num">${n}</div><div class="txt"><div class="h">${h}</div><div class="l">${l}</div></div>`;
+  $('steps').appendChild(r);
+  return { num: r.querySelector('.num'), h: r.querySelector('.h'), l: r.querySelector('.l') };
+});
+
+const show = (el, p, dx = 0, dy = 0) => {
+  el.style.opacity = p;
+  el.style.transform = `translate(${(1 - p) * dx}px, ${(1 - p) * dy}px)`;
+};
+
+window.render = function (t) {
+  // Scene 1: title (0 - 3.0)
+  const introOut = ease(t, 2.2, 0.8);
+  const intro = $('intro');
+  intro.style.opacity = ease(t, 0, 1.0) * (1 - introOut);
+  intro.style.transform = `translateY(${(1 - ease(t, 0, 1.0)) * 40 - introOut * 30}px)`;
+  $('introRule').style.width = `${ease(t, 0.3, 1.0) * 700}px`;
+
+  // Scenes 2-4: steps stack in (2.8 / 4.6 / 6.4), hold, clear 9.6-10.6
+  rows.forEach((r, i) => {
+    const s = 2.8 + i * 1.8;
+    show(r.num, ease(t, s, 0.8), -90, 0);
+    show(r.h, ease(t, s + 0.15, 0.8), 0, 30);
+    show(r.l, ease(t, s + 0.4, 0.8), 0, 20);
+  });
+  const clear = ease(t, 9.6, 1.0);
+  const steps = $('steps');
+  steps.style.opacity = 1 - clear;
+  steps.style.transform = `translateY(${-clear * 40}px)`;
+
+  // Scene 5: end card (10.2 - 15)
+  const brandP = ease(t, 10.2, 1.0);
+  const end = $('end');
+  end.querySelector('.brand').style.opacity = brandP;
+  end.querySelector('.brand').style.transform = `translateY(${(1 - brandP) * 40}px)`;
+  $('endRule').style.width = `${ease(t, 10.5, 1.0) * 700}px`;
+  const cta = $('cta');
+  const ctaP = ease(t, 11.0, 1.0);
+  cta.style.opacity = ctaP;
+  cta.style.transform = `translateY(${(1 - ctaP) * 24}px)`;
+  end.style.visibility = t < 10.1 ? 'hidden' : 'visible';
+};
+window.render(0);
+</script>
+</body>
+</html>
